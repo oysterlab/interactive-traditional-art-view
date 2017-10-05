@@ -2,15 +2,15 @@
 
 ## install
 ```
-    npm install
+npm install
 ```
 
 ## run
 ```
-    npm run watch
+npm run watch
 ```
 
-## for test
+## for test 
 if you want spread particles, press 2
 if you want show random styled image, press 1
 
