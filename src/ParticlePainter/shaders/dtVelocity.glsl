@@ -1,0 +1,28 @@
+#pragma glslify: curlNoise = require('./curl-noise')
+
+uniform sampler2D destPosTexture;
+uniform float uTime;
+
+void main() {
+    vec2 uv = gl_FragCoord.xy / resolution.xy;
+
+    vec4 destPos = texture2D(destPosTexture, uv);
+    vec4 pos = texture2D(positionTexture, uv);
+    vec4 vel = texture2D(velocityTexture, uv);
+
+    float t = (sin(uTime * 0.0001) * cos(uTime * 0.001)) * 0.8 + 0.2;
+    vec4 vel_ = vec4(curlNoise(vec3(pos.xy * 0.002, t)), 1.0) * 100.;
+
+    float l = length(destPos - pos) * 0.0005;
+   
+    vec4 diff = (destPos - pos) * 0.01;
+    
+    vel_.xyz *= l * l;
+
+    diff.xyz += vel_.xyz;
+
+    vel.xy = diff.xy; 
+
+    gl_FragColor = vel;
+}
+
