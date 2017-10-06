@@ -11,18 +11,16 @@ void main() {
     vec4 vel = texture2D(velocityTexture, uv);
 
     float t = (sin(uTime * 0.0001) * cos(uTime * 0.001)) * 0.8 + 0.2;
-    vec4 vel_ = vec4(curlNoise(vec3(pos.xy * 0.002, t)), 1.0) * 100.;
+    vec4 vel_ = vec4(curlNoise(vec3(pos.xyz * 0.002)), t) * .1;
 
-    float l = length(destPos - pos) * 0.0005;
+    float l = length(destPos - pos) * 0.01;
    
-    vec4 diff = (destPos - pos) * 0.01;
-    
-    vel_.xyz *= l * l;
+    vec4 diff = (destPos - pos) * 0.007;
 
-    diff.xyz += vel_.xyz;
+    diff.xyz += vel_.xyz * l;
 
-    vel.xy = diff.xy; 
+    vel.xyz *= 0.1;    
+    vel.xyz += diff.xyz; 
 
     gl_FragColor = vel;
 }
-

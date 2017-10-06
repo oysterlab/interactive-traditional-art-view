@@ -8,16 +8,18 @@ void main() {
     vec4 currColor = texture2D(colorTexture, uv);
     vec4 destColor = texture2D(destColorTexture, uv);
 
-    vec4 diff = destColor - currColor;
+    gl_FragColor = destColor;
 
-    if(destColor.x * destColor.y * destColor.z < 0.0001 ) {
-        destColor.x = 0.01;
-        destColor.y = 0.01;
-        destColor.z = 0.01;       
-    }
+//    vec4 diff = destColor - currColor;
 
-    currColor += diff * destColor * 0.1 * vec4(vec3(0.4), 1.0);
+//    if(destColor.x * destColor.y * destColor.z < 0.0001 ) {
+//        destColor.x = 0.01;
+//        destColor.y = 0.01;
+//        destColor.z = 0.01;       
+//    }
 
-    gl_FragColor = currColor;
+//    currColor += diff * destColor * 0.1 * vec4(vec3(0.4), 1.0);
+
+//    gl_FragColor = currColor;
 }
 
