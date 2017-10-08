@@ -4,7 +4,7 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "watch": "watchify src/index.js -v -t babelify -t glslify -d -o bundle.js | live-server"
+    "watch": "watchify src/index.js -v -t babelify -t glslify -d -o bundle.js | live-server | node server"
   },
   "glslify": {
     "transform": [

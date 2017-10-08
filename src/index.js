@@ -1,6 +1,82 @@
 const THREE = require('three')
 const OrbitControls = require('three-orbit-controls')(THREE)
 const path = require('path')
+const oflow = require('../lib/oflow')
+
+
+// var flow = new oflow.WebCamFlow();
+
+// const WIDTH = 640
+// const HEIGHT = 480
+// const canvas = document.createElement('canvas')
+// canvas.width = WIDTH
+// canvas.height = HEIGHT
+// document.body.appendChild(canvas)
+// const context = canvas.getContext('2d')
+
+// let flows = null
+
+// let maxX = 17 * 2
+// let maxY = 17 * 2
+
+// flow.onCalculated(function (direction) {
+//   const { zones } = direction
+  
+//   if (!flows) {
+//     flows = new Float32Array(zones.length * 4)
+//   }
+
+//   zones.forEach((zone, i) => {
+//     const i4 = i * 4
+
+//     flows[i4 + 0] = zone.u / 17
+//     flows[i4 + 1] = zone.v / 17
+//     flows[i4 + 2] = 0
+//     flows[i4 + 3] = 1
+//   });
+// });
+
+// flow.startCapture();
+
+// function render() {
+//   context.fillStyle = '#000'
+//   context.fillRect(0, 0, WIDTH, HEIGHT)
+  
+//   if (flows) {
+//     const colCount = parseInt(640 / 17)
+//     const rowCount = parseInt(480 / 17)
+
+//     const xInterval = WIDTH / colCount
+//     const yInterval = HEIGHT / rowCount
+
+//     context.strokeStyle = '#ffffff'
+//     for (let y = 0; y < rowCount; y++) {
+//       for (let x = 0; x < colCount; x++) {
+//         const i = (y * colCount + x) * 4
+//         const u = flows[i + 0]
+//         const v = flows[i + 1]
+
+//         context.beginPath()
+//         const fromX = WIDTH - x * xInterval + xInterval * 0.5
+//         const fromY = y * yInterval + yInterval * 0.5
+//         const toX = fromX - u * xInterval
+//         const toY = fromY + v * yInterval
+
+//         // context.fillStyle = `rgb(${Math.round(u * 255)}, ${Math.round(v * 255)}, 255)`
+//         // context.fillRect(fromX, fromY, 4, 4)
+
+//         context.moveTo(fromX, fromY)
+//         context.lineTo(toX, toY)
+//         context.stroke()        
+//       }
+//     }
+
+//   }
+
+//   requestAnimationFrame(render)
+// }
+
+// requestAnimationFrame(render)
 
 import ParticlePainter from './ParticlePainter'
 
@@ -190,3 +266,60 @@ window.addEventListener('keyup', ({keyCode}) => {
   }
 })
 
+
+
+// socket
+
+import config from './config'
+const { SOCKET_HOST, SOCKET_PORT } = config
+const socket = require('socket.io-client')(SOCKET_HOST + ':' + SOCKET_PORT + '/visual')
+
+socket.on('selected-style', (dataStr) => {
+  const { styleId } = JSON.parse(dataStr)
+
+  if(styleId == 0) {
+    particlePainter.toState('starryNightReady') 
+  } else {
+    particlePainter.toState('commonReady')  
+  }
+})
+
+socket.on('result-generated', (dataStr) => {
+  const { styleId, resultSrc } = JSON.parse(dataStr)
+  const imgSrc = `${SOCKET_HOST}:${SOCKET_PORT}${resultSrc}`
+
+  if(styleId == 0) {
+    setTimeout(() => {
+      loadImage(imgSrc).then((imageData) => {
+        particlePainter.toState('starryNightShow', imageData)
+      })
+    }, 1000)
+  } else {
+    setTimeout(() => {
+      loadImage(imgSrc).then((imageData) => {
+        particlePainter.toState('commonShow', imageData)
+      })
+    }, 1000)    
+  }
+})
+
+socket.on('selected-result', (dataStr) => {
+  const { styleId, resultSrc } = JSON.parse(dataStr)
+  const imgSrc = `${SOCKET_HOST}:${SOCKET_PORT}${resultSrc}`
+
+  if(styleId == 0) {
+    particlePainter.toState('starryNightReady') 
+    setTimeout(() => {
+      loadImage(imgSrc).then((imageData) => {
+        particlePainter.toState('starryNightShow', imageData)
+      })
+    }, 5000)
+  } else {
+    particlePainter.toState('commonReady') 
+    setTimeout(() => {
+      loadImage(imgSrc).then((imageData) => {
+        particlePainter.toState('commonShow', imageData)
+      })
+    }, 5000)    
+  }
+})

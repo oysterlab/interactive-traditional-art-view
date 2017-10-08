@@ -4,7 +4,6 @@ const OrbitControls = require('three-orbit-controls')(THREE)
 const GPUComputationRenderer = require('../../lib/GPUComputationRenderer')(THREE)
 const glsl = require('glslify')
 const path = require('path')
-const fs = require('fs')
 const request = require('superagent')
 
 class ParticlePainter {
