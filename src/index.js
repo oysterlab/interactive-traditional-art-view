@@ -1,82 +1,8 @@
 const THREE = require('three')
 const OrbitControls = require('three-orbit-controls')(THREE)
 const path = require('path')
-const oflow = require('../lib/oflow')
-
-
-// var flow = new oflow.WebCamFlow();
-
-// const WIDTH = 640
-// const HEIGHT = 480
-// const canvas = document.createElement('canvas')
-// canvas.width = WIDTH
-// canvas.height = HEIGHT
-// document.body.appendChild(canvas)
-// const context = canvas.getContext('2d')
-
-// let flows = null
-
-// let maxX = 17 * 2
-// let maxY = 17 * 2
-
-// flow.onCalculated(function (direction) {
-//   const { zones } = direction
-  
-//   if (!flows) {
-//     flows = new Float32Array(zones.length * 4)
-//   }
-
-//   zones.forEach((zone, i) => {
-//     const i4 = i * 4
-
-//     flows[i4 + 0] = zone.u / 17
-//     flows[i4 + 1] = zone.v / 17
-//     flows[i4 + 2] = 0
-//     flows[i4 + 3] = 1
-//   });
-// });
-
-// flow.startCapture();
-
-// function render() {
-//   context.fillStyle = '#000'
-//   context.fillRect(0, 0, WIDTH, HEIGHT)
-  
-//   if (flows) {
-//     const colCount = parseInt(640 / 17)
-//     const rowCount = parseInt(480 / 17)
-
-//     const xInterval = WIDTH / colCount
-//     const yInterval = HEIGHT / rowCount
-
-//     context.strokeStyle = '#ffffff'
-//     for (let y = 0; y < rowCount; y++) {
-//       for (let x = 0; x < colCount; x++) {
-//         const i = (y * colCount + x) * 4
-//         const u = flows[i + 0]
-//         const v = flows[i + 1]
-
-//         context.beginPath()
-//         const fromX = WIDTH - x * xInterval + xInterval * 0.5
-//         const fromY = y * yInterval + yInterval * 0.5
-//         const toX = fromX - u * xInterval
-//         const toY = fromY + v * yInterval
-
-//         // context.fillStyle = `rgb(${Math.round(u * 255)}, ${Math.round(v * 255)}, 255)`
-//         // context.fillRect(fromX, fromY, 4, 4)
-
-//         context.moveTo(fromX, fromY)
-//         context.lineTo(toX, toY)
-//         context.stroke()        
-//       }
-//     }
-
-//   }
-
-//   requestAnimationFrame(render)
-// }
-
-// requestAnimationFrame(render)
+const TWEEN = require('es6-tween')
+TWEEN.autoPlay(true)
 
 import ParticlePainter from './ParticlePainter'
 
@@ -248,21 +174,81 @@ function loadImage(src) {
     }
   })
 }
-
+window.camera = camera
 window.addEventListener('keyup', ({keyCode}) => {
-  if (keyCode == 49) {    //ready starray-night
+  if (keyCode == 49) {    // starray-night
+
     particlePainter.toState('starryNightReady')
-  } else if (keyCode == 50) {   //show starray-night
-    loadImage('./resources/styled1.jpg').then((imageData) => {
-      particlePainter.toState('starryNightShow', imageData)
+
+    new TWEEN.Tween(camera.rotation)
+    .to({
+      x: 0.,
+      y: 0.,
+      z: 0.
+     }, 3000)
+    .start()
+
+    new TWEEN.Tween(camera.position)
+    .to({
+      x: 0,
+      y: 0,
+      z: 2600 }, 6000)
+    .on('complete', () => {
+
+      loadImage(`./resources/styled1.jpg`).then((imageData) => {
+        particlePainter.toState('starryNightShow', imageData)
+      })    
+
+      new TWEEN.Tween(camera.position)
+      .to({
+        x: -5.496596160302264,
+        y: -453.16908737111,
+        z: 393.20168575666844
+      }, 2000)
+      .start();
+
+      new TWEEN.Tween(camera.rotation)
+      .to({
+        x: 0.8561323593044102,
+        y: -0.009161121742914736,
+        z: 0.010557749391455028
+       }, 2000)
+      .start()
     })
-  } else if (keyCode == 51) {    //ready common
+    .start()
+   
+  } else if (keyCode == 50) {   // common
+
     particlePainter.toState('commonReady')
-  } else if (keyCode == 52) {   //show common
-    loadImage(`./resources/styled${Math.ceil(Math.random() * 4) + 1}.jpg`).then((imageData) => {
-      console.log(imageData)
-      particlePainter.toState('commonShow', imageData)
+    
+    new TWEEN.Tween(camera.rotation)
+    .to({
+      x: 0.,
+      y: 0.,
+      z: 0.
+     }, 3000)
+    .start()
+
+    new TWEEN.Tween(camera.position)
+    .to({
+      x: 0,
+      y: 0,
+      z: 2000 }, 6000)
+    .start()  
+    .on('complete', () => {
+      loadImage(`./resources/styled${Math.ceil(Math.random() * 4) + 1}.jpg`).then((imageData) => {
+
+        particlePainter.toState('commonShow', imageData)
+
+        new TWEEN.Tween(camera.position)
+        .to({
+          x: 0,
+          y: 0,
+          z: 400 }, 2000)
+        .start() 
+      })    
     })
+
   }
 })
 

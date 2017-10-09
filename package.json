@@ -37,6 +37,7 @@
     "babel-plugin-glslify": "^2.0.0",
     "body-parser": "^1.18.2",
     "cors": "^2.8.4",
+    "es6-tween": "^3.8.24",
     "express": "^4.16.1",
     "glsl-noise": "0.0.0",
     "glslify": "^6.1.0",

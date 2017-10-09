@@ -5,13 +5,19 @@ const GPUComputationRenderer = require('../../lib/GPUComputationRenderer')(THREE
 const glsl = require('glslify')
 const path = require('path')
 const request = require('superagent')
+import OpticalFlow from './OpticalFlow'
 
 class ParticlePainter {
     constructor(renderer, camera, particleCount) {
         this.renderer = renderer
         this.camera = camera
         this.particleCount = particleCount
-        this.transferStates = {}        
+        this.transferStates = {}
+        
+        const opticalFlow = new OpticalFlow()
+        opticalFlow.start()     
+        
+        this.opticalFlow = opticalFlow
     }
 
     init(glsls) {
@@ -47,25 +53,25 @@ class ParticlePainter {
         const dtDestColor = gpuCompute.createTexture()
         
         for(let i = 0; i < dtPosition.image.data.length; i+=4) {
-      
-          dtPosition.image.data[i + 0] = 0 //i * 0.1 * Math.sin(i * 0.001) + ((Math.random() < 0.5) ? 1000 : - 1000)
-          dtPosition.image.data[i + 1] = 0
-          dtPosition.image.data[i + 2] = 0
-          dtPosition.image.data[i + 3] = 1
+
+            dtPosition.image.data[i + 0] = (Math.random() - 0.5) * 512 //i * 0.1 * Math.sin(i * 0.001) + ((Math.random() < 0.5) ? 1000 : - 1000)
+            dtPosition.image.data[i + 1] = (Math.random() - 0.5) * 512
+            dtPosition.image.data[i + 2] = 0
+            dtPosition.image.data[i + 3] = 1
         
-          dtVelocity[i + 0] = dtVelocity[i + 1] = dtVelocity[i + 2] = 0
-          dtVelocity[i + 3] = 1
-          
-          dtDestPosition.image.data[i + 0] = dtPosition.image.data[i + 0]
-          dtDestPosition.image.data[i + 1] = dtPosition.image.data[i + 1]
-          dtDestPosition.image.data[i + 2] = dtPosition.image.data[i + 2]
-          dtDestPosition.image.data[i + 3] = 1
+            dtVelocity[i + 0] = dtVelocity[i + 1] = dtVelocity[i + 2] = 0
+            dtVelocity[i + 3] = 1
+            
+            dtDestPosition.image.data[i + 0] = dtPosition.image.data[i + 0]
+            dtDestPosition.image.data[i + 1] = dtPosition.image.data[i + 1]
+            dtDestPosition.image.data[i + 2] = dtPosition.image.data[i + 2]
+            dtDestPosition.image.data[i + 3] = 1
 
-          dtColor.image.data[i + 0] = dtColor.image.data[i + 1] = dtColor.image.data[i + 2] = 1
-          dtColor.image.data[i + 3] = 1
+            dtColor.image.data[i + 0] = dtColor.image.data[i + 1] = dtColor.image.data[i + 2] = 1
+            dtColor.image.data[i + 3] = 1
 
-          dtDestColor.image.data[i + 0] = dtDestColor.image.data[i + 1] = dtDestColor.image.data[i + 2] = 1
-          dtDestColor.image.data[i + 3] = 1
+            dtDestColor.image.data[i + 0] = dtDestColor.image.data[i + 1] = dtDestColor.image.data[i + 2] = 1
+            dtDestColor.image.data[i + 3] = 1
         }
         
         const dtColorLogic = glsl(path.resolve(__dirname, './shaders/dtColor.glsl'))
@@ -77,9 +83,10 @@ class ParticlePainter {
         
         const velocityVariable = gpuCompute.addVariable("velocityTexture", glsls.velocity, dtVelocity)
         velocityVariable.material.uniforms.destPosTexture = { type: 't', value: null }
+        velocityVariable.material.uniforms.flowTexture = { type: 't', value: null }        
         velocityVariable.material.uniforms.uTime = { type: 'f', value: 0 }
         velocityVariable.material.uniforms.styleType = { type: 'i', value: 1 }
-
+        
         gpuCompute.setVariableDependencies(positionVariable, [positionVariable, velocityVariable])
         gpuCompute.setVariableDependencies(velocityVariable, [positionVariable, velocityVariable, colorVariable])
         gpuCompute.setVariableDependencies(colorVariable, [colorVariable])
@@ -133,11 +140,13 @@ class ParticlePainter {
             gpuCompute,
             velocityVariable,
             positionVariable,
-            colorVariable } = this
+            colorVariable,
+            opticalFlow } = this
 
         gpuCompute.compute()
 
         velocityVariable.material.uniforms.uTime.value = t
+        velocityVariable.material.uniforms.flowTexture.value = opticalFlow.getTexture()
         mesh.material.uniforms.positionTexture.value = gpuCompute.getCurrentRenderTarget(positionVariable).texture
         mesh.material.uniforms.colorTexture.value = gpuCompute.getCurrentRenderTarget(colorVariable).texture
         
@@ -148,7 +157,8 @@ class ParticlePainter {
         return new Promise((resolve) => {
             const dtVelocityLogic = `
                 ###imports###
-        
+            
+                uniform sampler2D flowTexture;
                 uniform sampler2D destPosTexture;
                 uniform float uTime;
                 uniform int styleType;
@@ -164,6 +174,10 @@ class ParticlePainter {
                     vec4 currColor = texture2D(colorTexture, vec2(uv.x, 1. - uv.y));
 
                     ###logics###
+
+                    vec4 flow = (texture2D(flowTexture, vec2(uv.x, 1.0 - uv.y)) + vec4(-.5, -.5, 0., 0.)) * 100.0; //- vec4(0.5, 0.5, 0., 0.)) * 100.0;//
+                    
+                    nextVel.xy += (flow.xy);
 
                     gl_FragColor = nextVel;
                 }
