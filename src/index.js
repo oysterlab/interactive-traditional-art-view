@@ -12,7 +12,7 @@ const renderer = new THREE.WebGLRenderer()
 renderer.setSize(WIDTH, HEIGHT)
 
 const camera = new THREE.PerspectiveCamera(75, WIDTH/HEIGHT, 1, 10000)
-camera.position.z = 500;  
+camera.position.z = 500
 
 document.body.appendChild(renderer.domElement)
 

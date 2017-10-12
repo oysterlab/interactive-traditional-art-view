@@ -14,10 +14,10 @@ class ParticlePainter {
         this.particleCount = particleCount
         this.transferStates = {}
         
-        const opticalFlow = new OpticalFlow()
-        opticalFlow.start()     
+//        const opticalFlow = new OpticalFlow()
+//        opticalFlow.start()     
         
-        this.opticalFlow = opticalFlow
+//        this.opticalFlow = opticalFlow
     }
 
     init(glsls) {
@@ -140,13 +140,11 @@ class ParticlePainter {
             gpuCompute,
             velocityVariable,
             positionVariable,
-            colorVariable,
-            opticalFlow } = this
+            colorVariable } = this
 
         gpuCompute.compute()
 
         velocityVariable.material.uniforms.uTime.value = t
-        velocityVariable.material.uniforms.flowTexture.value = opticalFlow.getTexture()
         mesh.material.uniforms.positionTexture.value = gpuCompute.getCurrentRenderTarget(positionVariable).texture
         mesh.material.uniforms.colorTexture.value = gpuCompute.getCurrentRenderTarget(colorVariable).texture
         
@@ -174,10 +172,6 @@ class ParticlePainter {
                     vec4 currColor = texture2D(colorTexture, vec2(uv.x, 1. - uv.y));
 
                     ###logics###
-
-                    vec4 flow = (texture2D(flowTexture, vec2(uv.x, 1.0 - uv.y)) + vec4(-.5, -.5, 0., 0.)) * 100.0; //- vec4(0.5, 0.5, 0., 0.)) * 100.0;//
-                    
-                    nextVel.xy += (flow.xy);
 
                     gl_FragColor = nextVel;
                 }

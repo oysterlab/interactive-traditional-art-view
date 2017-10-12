@@ -17,10 +17,5 @@ void main() {
    
     vec4 diff = (destPos - pos) * 0.007;
 
-    diff.xyz += vel_.xyz * l;
-
-    vel.xyz *= 0.1;    
-    vel.xyz += diff.xyz; 
-
     gl_FragColor = vel;
 }
