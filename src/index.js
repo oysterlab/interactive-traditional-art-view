@@ -24,14 +24,15 @@ particlePainter.addTransforState({
   name: 'starryNightReady',
   state: function(imageData, particlePainter) {
     const { computeWidth, computeHeight } = particlePainter
+    particlePainter.mesh.geometry.scale(1, 1, 2)
     const nextPositions = new Float32Array(computeWidth * computeHeight * 4)
-
+    
     for (let y = 0; y < computeHeight; y++) {
       for (let x = 0; x < computeWidth; x++) {
         const i = (y * computeHeight + x) * 4
 
-        nextPositions[i + 0] = (Math.random() - 0.5) * 2000
-        nextPositions[i + 1] = (Math.random() - 0.5) * 2000
+        nextPositions[i + 0] = x - computeWidth * 0.5
+        nextPositions[i + 1] = y - computeHeight * 0.5
         nextPositions[i + 2] = 2000
         nextPositions[i + 3] = 1
       }
@@ -52,19 +53,26 @@ particlePainter.addTransforState({
     const { computeWidth, computeHeight } = particlePainter
     const nextPositions = new Float32Array(computeWidth * computeHeight * 4)
     const nextColors = new Float32Array(computeWidth * computeHeight * 4)
-
+    const lumi = [0.2126, 0.7152, 0.0722]
+    
     for (let y = 0; y < computeHeight; y++) {
       for (let x = 0; x < computeWidth; x++) {
         const i = (y * computeHeight + x) * 4
 
+        const r = imageData.data[i + 0] / 255
+        const g = imageData.data[i + 1] / 255
+        const b = imageData.data[i + 2] / 255
+
+        const l = r * lumi[0] + g * lumi[1] + b * lumi[2]
+
         nextPositions[i + 0] = x - computeWidth * 0.5
         nextPositions[i + 1] = y - computeHeight * 0.5
-        nextPositions[i + 2] = 10
+        nextPositions[i + 2] = Math.pow(1 - l, 20) * 10
         nextPositions[i + 3] = 1
 
-        nextColors[i + 0] = imageData.data[i + 0] / 255
-        nextColors[i + 1] = imageData.data[i + 1] / 255
-        nextColors[i + 2] = imageData.data[i + 2] / 255
+        nextColors[i + 0] = r
+        nextColors[i + 1] = g
+        nextColors[i + 2] = b
         nextColors[i + 3] = imageData.data[i + 3] / 255    
       }
     }

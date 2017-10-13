@@ -7,9 +7,9 @@ vec4 starryNightShowVelocity(vec4 currPos, vec4 destPos, vec4 vel, vec4 currColo
 
     float l = currColor.r * lumi.r + currColor.g * lumi.g + currColor.b * lumi.b;
 
-    float m = pow((1. - l), 0.8) * 0.05;
+    float m = pow((1. - l), 0.2) * 0.1;
 
-    vec4 diff = (destPos - currPos) * m;
+    vec4 diff = (destPos - currPos) * m * pow((1. - l), 1.4);
 
     vel.xyz *= 0.1;    
     vel.xyz += diff.xyz; 
