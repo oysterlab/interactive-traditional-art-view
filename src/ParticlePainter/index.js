@@ -14,10 +14,10 @@ class ParticlePainter {
         this.particleCount = particleCount
         this.transferStates = {}
         
-//        const opticalFlow = new OpticalFlow()
-//        opticalFlow.start()     
+        const opticalFlow = new OpticalFlow()
+        opticalFlow.start()
         
-//        this.opticalFlow = opticalFlow
+        this.opticalFlow = opticalFlow
     }
 
     init(glsls) {
@@ -106,8 +106,16 @@ class ParticlePainter {
           }
         });
         
-        const mesh = new THREE.Mesh(geometry, material );
-        
+        const mesh = new THREE.Mesh(geometry, material);
+
+        const styleGeometry = new THREE.PlaneGeometry(computeWidth, computeHeight)
+        const styleTexture = null;
+        const styleMaterial = new THREE.MeshBasicMaterial({map: null});
+        var styleMesh = new THREE.Mesh(styleGeometry, styleMaterial);
+        styleMesh.visible = false
+        styleMesh.material.transparent = true
+        scene.add(styleMesh)
+
         scene.add(mesh)
 
         mesh.material.uniforms.colorTexture.value = dtColor
@@ -117,6 +125,7 @@ class ParticlePainter {
         this.renderer = renderer
         this.scene = scene
         this.camera = camera
+        this.styleMesh = styleMesh
         this.mesh = mesh
         this.particleCount = particleCount
         this.computeWidth = computeWidth
@@ -145,6 +154,8 @@ class ParticlePainter {
         gpuCompute.compute()
 
         velocityVariable.material.uniforms.uTime.value = t
+        velocityVariable.material.uniforms.flowTexture.value = this.opticalFlow.getTexture()
+
         mesh.material.uniforms.positionTexture.value = gpuCompute.getCurrentRenderTarget(positionVariable).texture
         mesh.material.uniforms.colorTexture.value = gpuCompute.getCurrentRenderTarget(colorVariable).texture
         
@@ -170,7 +181,8 @@ class ParticlePainter {
                     vec4 currPos = texture2D(positionTexture, uv);
                     vec4 currVel = texture2D(velocityTexture, uv);
                     vec4 currColor = texture2D(colorTexture, vec2(uv.x, 1. - uv.y));
-
+                    vec2 flow = (texture2D(flowTexture, vec2(1. - uv.x, uv.y)).xy - 0.5) * 2.;
+                    
                     ###logics###
 
                     gl_FragColor = nextVel;
@@ -224,7 +236,7 @@ class ParticlePainter {
             const { glslPath, funcName } = glslPaths[shaderType]
             if (!glslPath) return res
 
-            let glslChunk = ` nextVel = ${funcName}(currPos, destPos, currVel, currColor, uTime);`
+            let glslChunk = ` nextVel = ${funcName}(currPos, destPos, currVel, currColor, uTime, flow);`
             glslChunk = (idx == 0) ? 
                 `if (styleType == ${id}) {
                     ${glslChunk} 
@@ -303,7 +315,7 @@ class ParticlePainter {
         velocityVariable.material.uniforms.destPosTexture.value = dtDestPosition
     }
 
-    toState(stateName, imageData) {
+    toState(stateName, imageData, img) {
         const { transferStates, velocityVariable } = this
 
         const ids = Object.keys(transferStates)
@@ -320,7 +332,7 @@ class ParticlePainter {
             }
         }
 
-        const { nextPositions, nextColors } = func(imageData, this)
+        const { nextPositions, nextColors } = func(this, img, imageData)
 
         this.setDestination({
             positions: nextPositions,

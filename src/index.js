@@ -1,6 +1,7 @@
 const THREE = require('three')
 const OrbitControls = require('three-orbit-controls')(THREE)
 const path = require('path')
+
 const TWEEN = require('es6-tween')
 TWEEN.autoPlay(true)
 
@@ -22,11 +23,11 @@ const particlePainter = new ParticlePainter(renderer, camera, particleCount)
 // starry-night style
 particlePainter.addTransforState({
   name: 'starryNightReady',
-  state: function(imageData, particlePainter) {
+  state: function(particlePainter, img, imageData) {
     const { computeWidth, computeHeight } = particlePainter
-    particlePainter.mesh.geometry.scale(1, 1, 2)
+    particlePainter.mesh.geometry.copy(new THREE.BoxBufferGeometry(1, 1, 2))
     const nextPositions = new Float32Array(computeWidth * computeHeight * 4)
-    
+
     for (let y = 0; y < computeHeight; y++) {
       for (let x = 0; x < computeWidth; x++) {
         const i = (y * computeHeight + x) * 4
@@ -37,6 +38,8 @@ particlePainter.addTransforState({
         nextPositions[i + 3] = 1
       }
     }
+
+    particlePainter.styleMesh.visible = false
 
     return {
       nextPositions,
@@ -49,12 +52,12 @@ particlePainter.addTransforState({
 
 particlePainter.addTransforState({
   name: 'starryNightShow',
-  state: function(imageData, particlePainter) {
+  state: function(particlePainter, img, imageData) {
     const { computeWidth, computeHeight } = particlePainter
     const nextPositions = new Float32Array(computeWidth * computeHeight * 4)
     const nextColors = new Float32Array(computeWidth * computeHeight * 4)
     const lumi = [0.2126, 0.7152, 0.0722]
-    
+
     for (let y = 0; y < computeHeight; y++) {
       for (let x = 0; x < computeWidth; x++) {
         const i = (y * computeHeight + x) * 4
@@ -73,9 +76,27 @@ particlePainter.addTransforState({
         nextColors[i + 0] = r
         nextColors[i + 1] = g
         nextColors[i + 2] = b
-        nextColors[i + 3] = imageData.data[i + 3] / 255    
+        nextColors[i + 3] = imageData.data[i + 3] / 255
       }
     }
+
+
+    const texture = new THREE.Texture(img)
+    texture.needsUpdate = true
+    particlePainter.styleMesh.visible = true
+    particlePainter.styleMesh.material.map = texture
+    particlePainter.styleMesh.material.needsUpdate = true
+    particlePainter.styleMesh.material.opacity = 0.
+
+    new TWEEN.Tween(particlePainter.styleMesh.material)
+    .delay(3000)
+    .to({
+      opacity: 1.,
+    }, 10000)
+    .on('complete', () => {
+
+    })
+    .start()
 
     return {
       nextPositions,
@@ -91,9 +112,10 @@ particlePainter.addTransforState({
 //common style
 particlePainter.addTransforState({
   name: 'commonReady',
-  state: function(imageData, particlePainter) {
+  state: function(particlePainter, img, imageData) {
     const { computeWidth, computeHeight } = particlePainter
     const nextPositions = new Float32Array(computeWidth * computeHeight * 4)
+    particlePainter.styleMesh.visible = false
 
     for (let y = 0; y < computeHeight; y++) {
       for (let x = 0; x < computeWidth; x++) {
@@ -119,11 +141,12 @@ particlePainter.addTransforState({
 
 particlePainter.addTransforState({
   name: 'commonShow',
-  state: function(imageData, particlePainter) {
+  state: function(particlePainter, img, imageData) {
     const { computeWidth, computeHeight } = particlePainter
     const nextPositions = new Float32Array(computeWidth * computeHeight * 4)
     const nextColors = new Float32Array(computeWidth * computeHeight * 4)
-    
+    particlePainter.styleMesh.visible = false
+
     for (let y = 0; y < computeHeight; y++) {
       for (let x = 0; x < computeWidth; x++) {
         const i = (y * computeHeight + x) * 4
@@ -166,19 +189,20 @@ function loadImage(src) {
     const resImg = new Image()
     resImg.crossOrigin = "Anonymous";
     resImg.src = src
-    resImg.onload = () => {
+    resImg.onload = (e) => {
+      const img = e.target
       const canvas = document.createElement('canvas')
       const { computeWidth, computeHeight } = particlePainter
-  
+
       canvas.width = computeWidth
       canvas.height = computeHeight
-    
+
       const context = canvas.getContext('2d')
-      context.drawImage(resImg, 0, 0, resImg.width, resImg.height, 
-        0, 0, computeWidth, computeHeight)  
-      
+      context.drawImage(resImg, 0, 0, resImg.width, resImg.height,
+        0, 0, computeWidth, computeHeight)
+
       const imageData = context.getImageData(0, 0, computeWidth, computeHeight)
-      resolve(imageData)
+      resolve({ imageData, img })
     }
   })
 }
@@ -203,9 +227,9 @@ window.addEventListener('keyup', ({keyCode}) => {
       z: 2600 }, 6000)
     .on('complete', () => {
 
-      loadImage(`./resources/styled1.jpg`).then((imageData) => {
-        particlePainter.toState('starryNightShow', imageData)
-      })    
+      loadImage(`./resources/styled1.jpg`).then(({imageData, img}) => {
+        particlePainter.toState('starryNightShow', imageData, img)
+      })
 
       new TWEEN.Tween(camera.position)
       .to({
@@ -224,11 +248,11 @@ window.addEventListener('keyup', ({keyCode}) => {
       .start()
     })
     .start()
-   
+
   } else if (keyCode == 50) {   // common
 
     particlePainter.toState('commonReady')
-    
+
     new TWEEN.Tween(camera.rotation)
     .to({
       x: 0.,
@@ -241,20 +265,20 @@ window.addEventListener('keyup', ({keyCode}) => {
     .to({
       x: 0,
       y: 0,
-      z: 2000 }, 6000)
-    .start()  
+      z: 1000 }, 6000)
+    .start()
     .on('complete', () => {
-      loadImage(`./resources/styled${Math.ceil(Math.random() * 4) + 1}.jpg`).then((imageData) => {
+      loadImage(`./resources/styled7.jpg`).then(({imageData, img}) => {
 
-        particlePainter.toState('commonShow', imageData)
+        particlePainter.toState('commonShow', imageData, img)
 
         new TWEEN.Tween(camera.position)
         .to({
           x: 0,
           y: 0,
           z: 400 }, 2000)
-        .start() 
-      })    
+        .start()
+      })
     })
 
   }
@@ -267,14 +291,52 @@ window.addEventListener('keyup', ({keyCode}) => {
 import config from './config'
 const { SOCKET_HOST, SOCKET_PORT } = config
 const socket = require('socket.io-client')(SOCKET_HOST + ':' + SOCKET_PORT + '/visual')
+let cameraTween = {
+  rotation: new TWEEN.Tween(camera.rotation),
+  position: new TWEEN.Tween(camera.position)
+}
 
 socket.on('selected-style', (dataStr) => {
   const { styleId } = JSON.parse(dataStr)
 
   if(styleId == 0) {
-    particlePainter.toState('starryNightReady') 
+    particlePainter.toState('starryNightReady')
+
+    cameraTween.rotation.stop()
+    cameraTween.rotation
+    .to({
+      x: 0.,
+      y: 0.,
+      z: 0.
+     }, 3000)
+    .start()
+
+    cameraTween.position.stop()
+    cameraTween.position
+    .to({
+      x: 0,
+      y: 0,
+      z: 2600 }, 3000)
+    .start()
   } else {
-    particlePainter.toState('commonReady')  
+    particlePainter.toState('commonReady')
+
+    cameraTween.rotation.stop()
+    cameraTween.rotation
+    .to({
+      x: 0.,
+      y: 0.,
+      z: 0.
+     }, 300)
+    .start()
+
+    cameraTween.position.stop()
+    cameraTween.position
+    .to({
+      x: 0,
+      y: 0,
+      z: 2000 }, 600)
+    .start()
   }
 })
 
@@ -283,37 +345,54 @@ socket.on('result-generated', (dataStr) => {
   const imgSrc = `${SOCKET_HOST}:${SOCKET_PORT}${resultSrc}`
 
   if(styleId == 0) {
+
+    cameraTween.rotation.stop()
+    cameraTween.rotation
+    .to({
+      x: 0.,
+      y: 0.,
+      z: 0.
+     }, 1000)
+    .start()
+
+    loadImage(imgSrc).then(({imageData, img}) => {
+      particlePainter.toState('starryNightShow', imageData, img)
+
+      cameraTween.position.stop()
+      cameraTween.position
+      .to({
+        x: -5.496596160302264,
+        y: -453.16908737111,
+        z: 393.20168575666844
+      }, 2000)
+      .start();
+
+      cameraTween.rotation.stop()
+      cameraTween.rotation
+      .to({
+        x: 0.8561323593044102,
+        y: -0.009161121742914736,
+        z: 0.010557749391455028
+        }, 2000)
+      .start()
+
+      console.log('starryNightShow')
+    })
+
+
+  } else {
     setTimeout(() => {
-      loadImage(imgSrc).then((imageData) => {
-        particlePainter.toState('starryNightShow', imageData)
+      loadImage(imgSrc).then(({imageData, img}) => {
+        particlePainter.toState('commonShow', imageData, img)
+
+        cameraTween.position.stop()
+        cameraTween.position
+        .to({
+          x: 0,
+          y: 0,
+          z: 400 }, 2000)
+        .start()
       })
     }, 1000)
-  } else {
-    setTimeout(() => {
-      loadImage(imgSrc).then((imageData) => {
-        particlePainter.toState('commonShow', imageData)
-      })
-    }, 1000)    
-  }
-})
-
-socket.on('selected-result', (dataStr) => {
-  const { styleId, resultSrc } = JSON.parse(dataStr)
-  const imgSrc = `${SOCKET_HOST}:${SOCKET_PORT}${resultSrc}`
-
-  if(styleId == 0) {
-    particlePainter.toState('starryNightReady') 
-    setTimeout(() => {
-      loadImage(imgSrc).then((imageData) => {
-        particlePainter.toState('starryNightShow', imageData)
-      })
-    }, 5000)
-  } else {
-    particlePainter.toState('commonReady') 
-    setTimeout(() => {
-      loadImage(imgSrc).then((imageData) => {
-        particlePainter.toState('commonShow', imageData)
-      })
-    }, 5000)    
   }
 })

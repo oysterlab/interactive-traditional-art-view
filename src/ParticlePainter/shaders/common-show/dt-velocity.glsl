@@ -1,6 +1,6 @@
 #pragma glslify: curlNoise = require('../curl-noise')
 
-vec4 commonShowVelocity(vec4 currPos, vec4 destPos, vec4 vel, vec4 currColor, float uTime) {
+vec4 commonShowVelocity(vec4 currPos, vec4 destPos, vec4 vel, vec4 currColor, float uTime,  vec2 flow) {
 
     float t = (sin(uTime * 0.00001) * cos(uTime * 0.001)) * 0.8 + 0.2;
     vec4 noise = vec4(curlNoise(vec3(currPos.xyz * 0.001)), t) * .05;

@@ -10,7 +10,8 @@ class OpticalFlow {
         const canvas = document.createElement('canvas')
         canvas.width = WIDTH
         canvas.height = HEIGHT
-        //document.body.appendChild(canvas)
+
+//        document.body.appendChild(canvas)
         const context = canvas.getContext('2d')
         
         const colCount = parseInt(640 / 17)
@@ -33,9 +34,9 @@ class OpticalFlow {
           
           zones.forEach((zone, i) => {
             const i4 = i * 4
-        
-            flowData.data[i4 + 0] = 0;//177 + ((zone.u / 17) - 0.5) * 2 * 177
-            flowData.data[i4 + 1] = 127;//177 + ((zone.v / 17) - 0.5) * 2 * 177
+
+            flowData.data[i4 + 0] = 128. + (zone.u / 17.) * 127.
+            flowData.data[i4 + 1] = 128. + (zone.v / 17.) * 127.
             flowData.data[i4 + 2] = 0
             flowData.data[i4 + 3] = 255
           });
