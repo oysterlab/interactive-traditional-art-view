@@ -28,6 +28,7 @@ class OpticalFlow {
         flowCanvas.height = rowCount
         const flowContext = flowCanvas.getContext('2d')
         let flowData = flowContext.createImageData(colCount, rowCount)
+        this.flowTexture = new THREE.Texture(canvas)
         
         flow.onCalculated((direction) => {
           const { zones } = direction
@@ -44,10 +45,9 @@ class OpticalFlow {
           flowContext.putImageData(flowData, 0, 0)
           context.drawImage(flowCanvas, 0, 0, colCount, rowCount, 0, 0, WIDTH, HEIGHT)
         
-          this.flowTexture = new THREE.Texture(canvas)
         });
 
-        this.flowTexture = null
+//        this.flowTexture = null
         this.flow = flow
     }
 
