@@ -296,47 +296,82 @@ let cameraTween = {
   position: new TWEEN.Tween(camera.position)
 }
 
-socket.on('selected-style', (dataStr) => {
-  const { styleId } = JSON.parse(dataStr)
+socket.on('selected-result', (dataStr) => {
+  const { styleId, resultSrc } = JSON.parse(dataStr)
+  
+  const resultUrl = `${SOCKET_HOST}:${SOCKET_PORT}${resultSrc}`
+  console.log(resultUrl)
+  console.log(JSON.parse(dataStr))
 
   if(styleId == 0) {
-    particlePainter.toState('starryNightReady')
-
-    cameraTween.rotation.stop()
-    cameraTween.rotation
-    .to({
-      x: 0.,
-      y: 0.,
-      z: 0.
-     }, 3000)
-    .start()
-
-    cameraTween.position.stop()
-    cameraTween.position
-    .to({
-      x: 0,
-      y: 0,
-      z: 2600 }, 3000)
-    .start()
+        particlePainter.toState('starryNightReady')
+    
+        new TWEEN.Tween(camera.rotation)
+        .to({
+          x: 0.,
+          y: 0.,
+          z: 0.
+         }, 3000)
+        .start()
+    
+        new TWEEN.Tween(camera.position)
+        .to({
+          x: 0,
+          y: 0,
+          z: 2600 }, 6000)
+        .on('complete', () => {
+    
+          loadImage(resultUrl).then(({imageData, img}) => {
+            particlePainter.toState('starryNightShow', imageData, img)
+          })
+    
+          new TWEEN.Tween(camera.position)
+          .to({
+            x: -5.496596160302264,
+            y: -453.16908737111,
+            z: 393.20168575666844
+          }, 2000)
+          .start();
+    
+          new TWEEN.Tween(camera.rotation)
+          .to({
+            x: 0.8561323593044102,
+            y: -0.009161121742914736,
+            z: 0.010557749391455028
+           }, 2000)
+          .start()
+        })
+        .start()
   } else {
     particlePainter.toState('commonReady')
 
-    cameraTween.rotation.stop()
-    cameraTween.rotation
+    new TWEEN.Tween(camera.rotation)
     .to({
       x: 0.,
       y: 0.,
       z: 0.
-     }, 300)
+      }, 3000)
     .start()
 
-    cameraTween.position.stop()
-    cameraTween.position
+    new TWEEN.Tween(camera.position)
     .to({
       x: 0,
       y: 0,
-      z: 2000 }, 600)
+      z: 1000 }, 6000)
     .start()
+    .on('complete', () => {
+      loadImage(resultUrl).then(({imageData, img}) => {
+
+        particlePainter.toState('commonShow', imageData, img)
+
+        new TWEEN.Tween(camera.position)
+        .to({
+          x: 0,
+          y: 0,
+          z: 400 }, 2000)
+        .start()
+      })
+    })
   }
 })
 
@@ -396,3 +431,8 @@ socket.on('result-generated', (dataStr) => {
     }, 1000)
   }
 })
+
+// socket.on('selected-result', (dataStr) => {
+//   const data = JSON.parse(dataStr)
+//   console.log(data)
+// })
