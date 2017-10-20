@@ -1,4 +1,4 @@
-#pragma glslify: curlNoise = require('../curl-noise')
+#pragma glslify: curlNoise = require('../shaders/curl-noise')
 
 vec4 commonShowVelocity(vec4 currPos, vec4 destPos, vec4 vel, vec4 currColor, float uTime,  vec2 flow) {
 
@@ -12,9 +12,8 @@ vec4 commonShowVelocity(vec4 currPos, vec4 destPos, vec4 vel, vec4 currColor, fl
     vel.xyz *= 0.1;    
     vel.xyz += diff.xyz; 
 
-    flow.xy *= 2.;
-    
-//    vel.xy += flow.xy * 10.;
+
+    vel.xyz += pow(flow * 2., vec2(5.)).xyy;
 
     return vel;
 }

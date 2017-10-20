@@ -7,6 +7,12 @@ TWEEN.autoPlay(true)
 
 import ParticlePainter from './ParticlePainter'
 
+import StarryNight from './ParticlePainter/StarryNight'
+import Scream from './ParticlePainter/Scream'
+import Wave from './ParticlePainter/Wave'
+import Udine from './ParticlePainter/Udine'
+import Common from './ParticlePainter/Common'
+
 const WIDTH = window.innerWidth
 const HEIGHT = window.innerHeight
 const renderer = new THREE.WebGLRenderer()
@@ -21,157 +27,25 @@ const particleCount = Math.pow(2, 18)
 const particlePainter = new ParticlePainter(renderer, camera, particleCount)
 
 // starry-night style
-particlePainter.addTransforState({
-  name: 'starryNightReady',
-  state: function(particlePainter, img, imageData) {
-    const { computeWidth, computeHeight } = particlePainter
-    particlePainter.mesh.geometry.copy(new THREE.BoxBufferGeometry(1, 1, 2))
-    const nextPositions = new Float32Array(computeWidth * computeHeight * 4)
+particlePainter.addTransforState(StarryNight.Ready)
+particlePainter.addTransforState(StarryNight.Show)
 
-    for (let y = 0; y < computeHeight; y++) {
-      for (let x = 0; x < computeWidth; x++) {
-        const i = (y * computeHeight + x) * 4
+// scream style
+particlePainter.addTransforState(Scream.Ready)
+particlePainter.addTransforState(Scream.Show)
 
-        nextPositions[i + 0] = x - computeWidth * 0.5
-        nextPositions[i + 1] = y - computeHeight * 0.5
-        nextPositions[i + 2] = 2000
-        nextPositions[i + 3] = 1
-      }
-    }
+// wave style
+particlePainter.addTransforState(Wave.Ready)
+particlePainter.addTransforState(Wave.Show)
 
-    particlePainter.styleMesh.visible = false
+// udine style
+particlePainter.addTransforState(Udine.Ready)
+particlePainter.addTransforState(Udine.Show)
 
-    return {
-      nextPositions,
-    }
-  },
-  glslPaths: {
-    velocity: path.resolve(__dirname, './ParticlePainter/shaders/starry-night-ready/dt-velocity.glsl')
-  }
-})
+// common style
+particlePainter.addTransforState(Common.Ready)
+particlePainter.addTransforState(Common.Show)
 
-particlePainter.addTransforState({
-  name: 'starryNightShow',
-  state: function(particlePainter, img, imageData) {
-    const { computeWidth, computeHeight } = particlePainter
-    const nextPositions = new Float32Array(computeWidth * computeHeight * 4)
-    const nextColors = new Float32Array(computeWidth * computeHeight * 4)
-    const lumi = [0.2126, 0.7152, 0.0722]
-
-    for (let y = 0; y < computeHeight; y++) {
-      for (let x = 0; x < computeWidth; x++) {
-        const i = (y * computeHeight + x) * 4
-
-        const r = imageData.data[i + 0] / 255
-        const g = imageData.data[i + 1] / 255
-        const b = imageData.data[i + 2] / 255
-
-        const l = r * lumi[0] + g * lumi[1] + b * lumi[2]
-
-        nextPositions[i + 0] = x - computeWidth * 0.5
-        nextPositions[i + 1] = y - computeHeight * 0.5
-        nextPositions[i + 2] = Math.pow(1 - l, 20) * 10
-        nextPositions[i + 3] = 1
-
-        nextColors[i + 0] = r
-        nextColors[i + 1] = g
-        nextColors[i + 2] = b
-        nextColors[i + 3] = imageData.data[i + 3] / 255
-      }
-    }
-
-
-    const texture = new THREE.Texture(img)
-    texture.needsUpdate = true
-    particlePainter.styleMesh.visible = true
-    particlePainter.styleMesh.material.map = texture
-    particlePainter.styleMesh.material.needsUpdate = true
-    particlePainter.styleMesh.material.opacity = 0.
-
-    new TWEEN.Tween(particlePainter.styleMesh.material)
-    .delay(3000)
-    .to({
-      opacity: 1.,
-    }, 10000)
-    .on('complete', () => {
-
-    })
-    .start()
-
-    return {
-      nextPositions,
-      nextColors,
-    }
-  },
-  glslPaths: {
-    velocity: path.resolve(__dirname, './ParticlePainter/shaders/starry-night-show/dt-velocity.glsl')
-  }
-})
-
-
-//common style
-particlePainter.addTransforState({
-  name: 'commonReady',
-  state: function(particlePainter, img, imageData) {
-    const { computeWidth, computeHeight } = particlePainter
-    const nextPositions = new Float32Array(computeWidth * computeHeight * 4)
-    particlePainter.styleMesh.visible = false
-
-    for (let y = 0; y < computeHeight; y++) {
-      for (let x = 0; x < computeWidth; x++) {
-        const i = (y * computeHeight + x) * 4
-        const ri = Math.random() //(y * computeHeight + x) / ()
-
-        nextPositions[i + 0] = Math.cos(ri * 2 * Math.PI) * 1200
-        nextPositions[i + 1] = Math.sin(ri * 2 * Math.PI) * 1200
-        nextPositions[i + 2] = (Math.random() - 0.5) * 1000
-        nextPositions[i + 3] = 1
-
-      }
-    }
-
-    return {
-      nextPositions,
-    }
-  },
-  glslPaths: {
-    velocity: path.resolve(__dirname, './ParticlePainter/shaders/common-ready/dt-velocity.glsl')
-  }
-})
-
-particlePainter.addTransforState({
-  name: 'commonShow',
-  state: function(particlePainter, img, imageData) {
-    const { computeWidth, computeHeight } = particlePainter
-    const nextPositions = new Float32Array(computeWidth * computeHeight * 4)
-    const nextColors = new Float32Array(computeWidth * computeHeight * 4)
-    particlePainter.styleMesh.visible = false
-
-    for (let y = 0; y < computeHeight; y++) {
-      for (let x = 0; x < computeWidth; x++) {
-        const i = (y * computeHeight + x) * 4
-
-        nextPositions[i + 0] = x - computeWidth * 0.5
-        nextPositions[i + 1] = y - computeHeight * 0.5
-        nextPositions[i + 2] = 10
-        nextPositions[i + 3] = 1
-
-        nextColors[i + 0] = imageData.data[i + 0] / 255
-        nextColors[i + 1] = imageData.data[i + 1] / 255
-        nextColors[i + 2] = imageData.data[i + 2] / 255
-        nextColors[i + 3] = imageData.data[i + 3] / 255
-      }
-    }
-
-    return {
-      nextPositions,
-      nextColors,
-    }
-  },
-  glslPaths: {
-    velocity: path.resolve(__dirname, './ParticlePainter/shaders/common-show/dt-velocity.glsl')
-  }
-})
 
 particlePainter.compile().then(() => {
   requestAnimationFrame(render)
@@ -206,233 +80,218 @@ function loadImage(src) {
     }
   })
 }
+
+let cameraTween = {
+  rotation: new TWEEN.Tween(camera.rotation),
+  position: new TWEEN.Tween(camera.position)
+}
+
+
 window.camera = camera
-window.addEventListener('keyup', ({keyCode}) => {
-  if (keyCode == 49) {    // starray-night
 
-    particlePainter.toState('starryNightReady')
-
-    new TWEEN.Tween(camera.rotation)
-    .to({
-      x: 0.,
-      y: 0.,
-      z: 0.
-     }, 3000)
-    .start()
-
-    new TWEEN.Tween(camera.position)
-    .to({
-      x: 0,
-      y: 0,
-      z: 2600 }, 6000)
-    .on('complete', () => {
-
-      loadImage(`./resources/styled1.jpg`).then(({imageData, img}) => {
-        particlePainter.toState('starryNightShow', imageData, img)
-      })
-
-      new TWEEN.Tween(camera.position)
-      .to({
-        x: -5.496596160302264,
-        y: -453.16908737111,
-        z: 393.20168575666844
-      }, 2000)
-      .start();
-
-      new TWEEN.Tween(camera.rotation)
-      .to({
-        x: 0.8561323593044102,
-        y: -0.009161121742914736,
-        z: 0.010557749391455028
-       }, 2000)
-      .start()
-    })
-    .start()
-
-  } else if (keyCode == 50) {   // common
-
-    particlePainter.toState('commonReady')
-
-    new TWEEN.Tween(camera.rotation)
-    .to({
-      x: 0.,
-      y: 0.,
-      z: 0.
-     }, 3000)
-    .start()
-
-    new TWEEN.Tween(camera.position)
-    .to({
-      x: 0,
-      y: 0,
-      z: 1000 }, 6000)
-    .start()
-    .on('complete', () => {
-      loadImage(`./resources/styled7.jpg`).then(({imageData, img}) => {
-
-        particlePainter.toState('commonShow', imageData, img)
-
-        new TWEEN.Tween(camera.position)
-        .to({
-          x: 0,
-          y: 0,
-          z: 400 }, 2000)
-        .start()
-      })
-    })
-
-  }
-})
-
-
+setTimeout(() => {
+  loadImage(`./resources/styled6.jpg`).then(({imageData, img}) => {
+    particlePainter.toState('udineShow', imageData, img)
+    camera.position.set(0, 0, 400)
+  })  
+}, 500)
 
 // socket
 
 import config from './config'
 const { SOCKET_HOST, SOCKET_PORT } = config
 const socket = require('socket.io-client')(SOCKET_HOST + ':' + SOCKET_PORT + '/visual')
-let cameraTween = {
-  rotation: new TWEEN.Tween(camera.rotation),
-  position: new TWEEN.Tween(camera.position)
-}
 
+// from history
 socket.on('selected-result', (dataStr) => {
   const { styleId, resultSrc } = JSON.parse(dataStr)
   
   const resultUrl = `${SOCKET_HOST}:${SOCKET_PORT}${resultSrc}`
-  console.log(resultUrl)
-  console.log(JSON.parse(dataStr))
 
-  if(styleId == 0) {
-        particlePainter.toState('starryNightReady')
+  if (styleId == 0) {
     
-        new TWEEN.Tween(camera.rotation)
-        .to({
-          x: 0.,
-          y: 0.,
-          z: 0.
-         }, 3000)
-        .start()
-    
-        new TWEEN.Tween(camera.position)
-        .to({
-          x: 0,
-          y: 0,
-          z: 2600 }, 6000)
-        .on('complete', () => {
-    
-          loadImage(resultUrl).then(({imageData, img}) => {
-            particlePainter.toState('starryNightShow', imageData, img)
-          })
-    
-          new TWEEN.Tween(camera.position)
-          .to({
-            x: -5.496596160302264,
-            y: -453.16908737111,
-            z: 393.20168575666844
-          }, 2000)
-          .start();
-    
-          new TWEEN.Tween(camera.rotation)
-          .to({
-            x: 0.8561323593044102,
-            y: -0.009161121742914736,
-            z: 0.010557749391455028
-           }, 2000)
-          .start()
-        })
-        .start()
-  } else {
-    particlePainter.toState('commonReady')
-
-    new TWEEN.Tween(camera.rotation)
-    .to({
-      x: 0.,
-      y: 0.,
-      z: 0.
-      }, 3000)
-    .start()
-
-    new TWEEN.Tween(camera.position)
-    .to({
-      x: 0,
-      y: 0,
-      z: 1000 }, 6000)
-    .start()
-    .on('complete', () => {
+    particlePainter.toState(StarryNight.Ready.name)
+    StarryNight.Ready.cameraAnimation(cameraTween).then(() => {
       loadImage(resultUrl).then(({imageData, img}) => {
+        particlePainter.toState(StarryNight.Show.name, imageData, img)
+        StarryNight.Show.cameraAnimation(cameraTween)
+      })
+    })
 
-        particlePainter.toState('commonShow', imageData, img)
+  } else if (styleId == 1) {
 
-        new TWEEN.Tween(camera.position)
-        .to({
-          x: 0,
-          y: 0,
-          z: 400 }, 2000)
-        .start()
+    particlePainter.toState(Wave.Ready.name)
+    Wave.Ready.cameraAnimation(cameraTween).then(() => {
+      loadImage(resultUrl).then(({imageData, img}) => {
+        particlePainter.toState(Wave.Show.name, imageData, img)
+        Wave.Show.cameraAnimation(cameraTween)
+      })
+    })
+
+  } else if (styleId == 2) {
+
+    particlePainter.toState(Scream.Ready.name)
+    Scream.Ready.cameraAnimation(cameraTween).then(() => {
+      loadImage(resultUrl).then(({imageData, img}) => {
+        particlePainter.toState(Scream.Show.name, imageData, img)
+        Scream.Show.cameraAnimation(cameraTween)
+      })
+    })
+    
+  } else if (styleId == 3) {
+    
+    particlePainter.toState(Udine.Ready.name)
+    Udine.Ready.cameraAnimation(cameraTween).then(() => {
+      loadImage(resultUrl).then(({imageData, img}) => {
+        particlePainter.toState(Udine.Show.name, imageData, img)
+        Udine.Show.cameraAnimation(cameraTween)
+      })
+    })
+
+  } else {
+
+    particlePainter.toState(Common.Ready.name)
+    Common.Ready.cameraAnimation(cameraTween).then(() => {
+      loadImage(resultUrl).then(({imageData, img}) => {
+        particlePainter.toState(Common.Show.name, imageData, img)
+        Common.Show.cameraAnimation(cameraTween)
       })
     })
   }
 })
+
+// from conductive
+
+socket.on('selected-style', (dataStr) => {
+  const { styleId } = JSON.parse(dataStr)
+  
+  if (styleId == 0) {
+
+    particlePainter.toState(StarryNight.Ready.name)
+    StarryNight.Ready.cameraAnimation(cameraTween)
+
+  } else if (styleId == 1) {
+
+    particlePainter.toState(Wave.Ready.name)
+    Wave.Ready.cameraAnimation(cameraTween)
+
+  } else if (styleId == 2) {
+
+    particlePainter.toState(Scream.Ready.name)
+    Scream.Ready.cameraAnimation(cameraTween)
+
+  } else if (styleId == 3) {
+
+    particlePainter.toState(Udine.Ready.name)
+    Udine.Ready.cameraAnimation(cameraTween)
+    
+  } else {
+
+    particlePainter.toState(Common.Ready.name)
+    Common.Ready.cameraAnimation(cameraTween)
+
+  } 
+})
+
 
 socket.on('result-generated', (dataStr) => {
   const { styleId, resultSrc } = JSON.parse(dataStr)
   const imgSrc = `${SOCKET_HOST}:${SOCKET_PORT}${resultSrc}`
 
-  if(styleId == 0) {
-
-    cameraTween.rotation.stop()
-    cameraTween.rotation
-    .to({
-      x: 0.,
-      y: 0.,
-      z: 0.
-     }, 1000)
-    .start()
+  if (styleId == 0) {
 
     loadImage(imgSrc).then(({imageData, img}) => {
-      particlePainter.toState('starryNightShow', imageData, img)
-
-      cameraTween.position.stop()
-      cameraTween.position
-      .to({
-        x: -5.496596160302264,
-        y: -453.16908737111,
-        z: 393.20168575666844
-      }, 2000)
-      .start();
-
-      cameraTween.rotation.stop()
-      cameraTween.rotation
-      .to({
-        x: 0.8561323593044102,
-        y: -0.009161121742914736,
-        z: 0.010557749391455028
-        }, 2000)
-      .start()
-
-      console.log('starryNightShow')
+      particlePainter.toState(StarryNight.Show.name, imageData, img)
+      StarryNight.Show.cameraAnimation(cameraTween)
     })
 
+  } else if (styleId == 1) {
+
+    loadImage(imgSrc).then(({imageData, img}) => {
+      particlePainter.toState(Wave.Show.name, imageData, img)
+      Wave.Show.cameraAnimation(cameraTween)
+    })
+
+  } else if (styleId == 2) {
+
+    loadImage(imgSrc).then(({imageData, img}) => {
+      particlePainter.toState(Scream.Show.name, imageData, img)
+      Scream.Show.cameraAnimation(cameraTween)
+    })
+
+  } else if (styleId == 3) {
+
+    loadImage(imgSrc).then(({imageData, img}) => {
+      particlePainter.toState(Udine.Show.name, imageData, img)
+      Udine.Show.cameraAnimation(cameraTween)
+    })
 
   } else {
-    setTimeout(() => {
-      loadImage(imgSrc).then(({imageData, img}) => {
-        particlePainter.toState('commonShow', imageData, img)
 
-        cameraTween.position.stop()
-        cameraTween.position
-        .to({
-          x: 0,
-          y: 0,
-          z: 400 }, 2000)
-        .start()
-      })
-    }, 1000)
-  }
+    loadImage(imgSrc).then(({imageData, img}) => {
+      particlePainter.toState(Common.Show.name, imageData, img)
+      Common.Show.cameraAnimation(cameraTween)
+    })
+
+  } 
+  
 })
 
-// socket.on('selected-result', (dataStr) => {
-//   const data = JSON.parse(dataStr)
-//   console.log(data)
-// })
+
+// debugging
+
+window.addEventListener('keyup', ({keyCode}) => {
+  if (keyCode == 49) {    // starray-night
+
+    particlePainter.toState(StarryNight.Ready.name)
+    StarryNight.Ready.cameraAnimation(cameraTween).then(() => {
+      loadImage(`./resources/styled1.jpg`).then(({imageData, img}) => {
+        particlePainter.toState(StarryNight.Show.name, imageData, img)
+        StarryNight.Show.cameraAnimation(cameraTween)
+      })
+    })
+
+  } else if (keyCode == 50) {   // wave
+
+    particlePainter.toState(Wave.Ready.name)
+    Wave.Ready.cameraAnimation(cameraTween).then(() => {
+      loadImage(`./resources/styled5.jpg`).then(({imageData, img}) => {
+        particlePainter.toState(Wave.Show.name, imageData, img)
+        Wave.Show.cameraAnimation(cameraTween)
+      })
+    })
+
+  } else if (keyCode == 51) {   // scream
+    
+    particlePainter.toState(Scream.Ready.name)
+    Scream.Ready.cameraAnimation(cameraTween).then(() => {
+      loadImage(`./resources/styled7.jpg`).then(({imageData, img}) => {
+        particlePainter.toState(Scream.Show.name, imageData, img)
+        Scream.Show.cameraAnimation(cameraTween)
+      })
+    })
+
+  } else if (keyCode == 52) {   // udine
+    
+    particlePainter.toState(Udine.Ready.name)
+    Udine.Ready.cameraAnimation(cameraTween).then(() => {
+      loadImage(`./resources/styled6.jpg`).then(({imageData, img}) => {
+        particlePainter.toState(Udine.Show.name, imageData, img)
+        Udine.Show.cameraAnimation(cameraTween)
+      })
+    })
+
+  } else {
+
+    particlePainter.toState(Common.Ready.name)
+    Common.Ready.cameraAnimation(cameraTween).then(() => {
+      loadImage(`./resources/test2-1507957932338-4.jpg`).then(({imageData, img}) => {
+        particlePainter.toState(Common.Show.name, imageData, img)
+        Common.Show.cameraAnimation(cameraTween)
+      })
+    })
+
+  }
+
+  
+})
