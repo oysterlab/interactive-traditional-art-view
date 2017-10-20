@@ -22,7 +22,7 @@ const Ready = {
         }
 
         particlePainter.styleMesh.visible = false
-
+        particlePainter.styleMesh.material.map = null
         return {
             nextPositions,
         }

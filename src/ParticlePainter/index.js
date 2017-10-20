@@ -5,6 +5,10 @@ const GPUComputationRenderer = require('../../lib/GPUComputationRenderer')(THREE
 const glsl = require('glslify')
 const path = require('path')
 const request = require('superagent')
+
+import config from '../config'
+const { SOCKET_HOST, SOCKET_PORT } = config
+
 import OpticalFlow from './OpticalFlow'
 
 class ParticlePainter {
@@ -205,7 +209,7 @@ class ParticlePainter {
     sendCompileRequest(glslifys) {
         return new Promise((resolve) => {
             request
-            .post('http://localhost:3000/compile-glsl')
+            .post(`${SOCKET_HOST}:3000/compile-glsl`)
             .send({glslifys})
             .withCredentials(false)
             .end((err, res) => {

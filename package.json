@@ -43,6 +43,7 @@
     "glslify": "^6.1.0",
     "glslify-babel": "^1.0.1",
     "glslify-hex": "^2.1.1",
+    "live-server-https": "0.0.2",
     "socket.io-client": "^2.0.3",
     "superagent": "^3.6.3",
     "three": "^0.87.1",

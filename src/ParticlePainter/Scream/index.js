@@ -22,6 +22,7 @@ const Ready = {
         }
 
         particlePainter.styleMesh.visible = false
+        particlePainter.styleMesh.material.map = null
 
         return {
             nextPositions,
@@ -87,22 +88,22 @@ const Show = {
       }
   
   
-      const texture = new THREE.Texture(img)
-      texture.needsUpdate = true
-      particlePainter.styleMesh.visible = true
-      particlePainter.styleMesh.material.map = texture
-      particlePainter.styleMesh.material.needsUpdate = true
-      particlePainter.styleMesh.material.opacity = 0.
+      // const texture = new THREE.Texture(img)
+      // texture.needsUpdate = true
+      // particlePainter.styleMesh.visible = true
+      // particlePainter.styleMesh.material.map = texture
+      // particlePainter.styleMesh.material.needsUpdate = true
+      // particlePainter.styleMesh.material.opacity = 0.
   
-      new TWEEN.Tween(particlePainter.styleMesh.material)
-      .delay(3000)
-      .to({
-        opacity: 1.,
-      }, 10000)
-      .on('complete', () => {
+      // new TWEEN.Tween(particlePainter.styleMesh.material)
+      // .delay(3000)
+      // .to({
+      //   opacity: 1.,
+      // }, 10000)
+      // .on('complete', () => {
   
-      })
-      .start()
+      // })
+      // .start()
   
       return {
         nextPositions,

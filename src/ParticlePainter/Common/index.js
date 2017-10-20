@@ -22,7 +22,8 @@ const Ready = {
         }
 
         particlePainter.styleMesh.visible = false
-
+        particlePainter.styleMesh.material.map = null
+        
         return {
             nextPositions,
         }
@@ -86,7 +87,6 @@ const Show = {
         }
       }
   
-  
       const texture = new THREE.Texture(img)
       texture.needsUpdate = true
       particlePainter.styleMesh.visible = true
@@ -95,10 +95,10 @@ const Show = {
       particlePainter.styleMesh.material.opacity = 0.
   
       new TWEEN.Tween(particlePainter.styleMesh.material)
-      .delay(3000)
+      .delay(5000)
       .to({
         opacity: 1.,
-      }, 10000)
+      }, 60000)
       .on('complete', () => {
   
       })
@@ -117,19 +117,19 @@ const Show = {
         cameraTwin.position.stop()
         cameraTwin.position
         .to({
-          x: -5.496596160302264,
-          y: -453.16908737111,
-          z: 393.20168575666844
-        }, 2000)
+          x: 9.87783573818386,
+          y: -10.250118866746284,
+          z: 600.94384034732883
+        }, 14000)
         .start();
     
         cameraTwin.rotation.stop()
         cameraTwin.rotation
         .to({
-          x: 0.8561323593044102,
-          y: -0.009161121742914736,
-          z: 0.010557749391455028
-         }, 2000)
+          x: 0.026079540794765526,
+          y: 0.02512419838770403,
+          z: -0.0006553071066058748
+         }, 10000)
         .start() 
         .on('complete', () => {
           resolve()

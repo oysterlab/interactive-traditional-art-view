@@ -19,11 +19,8 @@ vec4 commonShowVelocity(vec4 currPos, vec4 destPos, vec4 vel, vec4 currColor, fl
     
     vec2 d = sin(cos(sin(flow.xy) * 2.0));
 
-    vel.x += d.x * 0.8;
+    vel.x += d.x * 1.4;
     vel.y += d.y * 0.4;
-
-//    vel.xy += sin(flow.xy) * 0.4; //pow(flow * 2., vec2(0.6)).xy;
-//    vel.z *= flow.x;
 
     return vel;
 }
