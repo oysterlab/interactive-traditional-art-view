@@ -90,10 +90,13 @@ let cameraTween = {
 window.camera = camera
 
 setTimeout(() => {
-  loadImage(`./resources/styled6.jpg`).then(({imageData, img}) => {
-    particlePainter.toState('udineShow', imageData, img)
-    camera.position.set(0, 0, 400)
-  })  
+  particlePainter.toState(StarryNight.Ready.name)
+  StarryNight.Ready.cameraAnimation(cameraTween).then(() => {
+    loadImage(`./resources/styled1.jpg`).then(({imageData, img}) => {
+      particlePainter.toState(StarryNight.Show.name, imageData, img)
+      StarryNight.Show.cameraAnimation(cameraTween)
+    })
+  })
 }, 500)
 
 // socket
